@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+  <url>
+    <loc>https://insightsengineering.github.io/r.pkg.template/index.html</loc>
+  </url>
+  <url>
+    <loc>https://insightsengineering.github.io/r.pkg.template/reference/hello.html</loc>
+  </url>
+  <url>
+    <loc>https://insightsengineering.github.io/r.pkg.template/reference/plumber_api.html</loc>
+  </url>
+  <url>
+    <loc>https://insightsengineering.github.io/r.pkg.template/reference/shiny_app.html</loc>
+  </url>
+  <url>
+    <loc>https://insightsengineering.github.io/r.pkg.template/articles/hello.html</loc>
+  </url>
+</urlset>
