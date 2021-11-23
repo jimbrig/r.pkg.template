@@ -37,7 +37,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="index.html">r.pkg.template</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">0.0.0.9009</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">0.0.0.9010</span>
       </span>
     </div>
 
@@ -67,15 +67,6 @@
 <li>
   <a href="news/index.html">Changelog</a>
 </li>
-<!-- start_releases -->
-<li class="dropdown">
-	<a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false">
-Other releases
-<span class="caret"></span></a><ul class="dropdown-menu" role="menu">
-   <li><a href="index.html">latest</a></li>
-   <li><a href="/index.html"></a></li>
-</ul></li>
-<!-- end_releases -->
       </ul>
 <ul class="nav navbar-nav navbar-right">
 <li>
@@ -131,6 +122,92 @@ Other releases
 <li><p>Update the remainder of the package as you would do typically while developing an R package.</p></li>
 <li><p>Enjoy!</p></li>
 </ul>
+</div>
+<div id="pre-commit" class="section level2">
+<h2 class="hasAnchor">
+<a href="#pre-commit" class="anchor"></a>Pre-commit</h2>
+<p>This repository contains an example <a href="https://pre-commit.com">pre-commit</a> configuration.</p>
+<p><a href="https://pre-commit.com">pre-commit</a> is a tool that uses <a href="https://git-scm.com/book/en/v2/Customizing-Git-Git-Hooks">Git hooks</a> to identify and resolve simple issues prior to submission for code review. <a href="https://git-scm.com/book/en/v2/Customizing-Git-Git-Hooks">Git hooks</a> run on every commit to automatically point out and solve issues such as missing semicolons, trailing whitespaces, code formatting and spell checks.</p>
+<div id="setting-up-pre-commit-for-r-project" class="section level3">
+<h3 class="hasAnchor">
+<a href="#setting-up-pre-commit-for-r-project" class="anchor"></a>Setting up pre-commit for R project</h3>
+<ol>
+<li>Install the <code>pre-commit</code> framework. Use the official <a href="https://pre-commit.com/#installation">installation guide</a>.</li>
+<li>Install R package <code>precommit</code>
+</li>
+</ol>
+<div class="sourceCode" id="cb6"><pre class="sourceCode sh"><code class="sourceCode bash"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="ex">R</span> <span class="at">-e</span> <span class="st">'install.packages("precommit")'</span></span></code></pre></div>
+<ol>
+<li>Run the <code>use_precommit()</code> function to generate an example pre-commit configuration called <code>.pre-commit-config.yaml</code>:</li>
+</ol>
+<div class="sourceCode" id="cb7"><pre class="sourceCode sh"><code class="sourceCode bash"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="bu">[</span> <span class="ot">!</span> <span class="ot">-f</span> <span class="st">".pre-commit-config.yaml"</span> <span class="bu">]</span> <span class="kw">&amp;&amp;</span> <span class="ex">R</span> <span class="at">-e</span> <span class="st">'precommit::use_precommit()'</span></span></code></pre></div>
+<ol>
+<li>Install the git hooks script:</li>
+</ol>
+<div class="sourceCode" id="cb8"><pre class="sourceCode sh"><code class="sourceCode bash"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="ex">pre-commit</span> install</span></code></pre></div>
+<ol>
+<li>From this moment all scripts from <code>.pre-commit-config.yaml</code> will run before every <code>git commit</code> command. If you want to run them manually without committing you can use command <code>pre-commit run --all-files</code>. For more information refer official <a href="https://pre-commit.com">pre-commit</a> documentation.</li>
+</ol>
+<blockquote>
+<p>NOTE: Frequently run <code>pre-commit autoupdate</code> to update all repositories in <code>.pre-commit-config.yaml</code>.</p>
+</blockquote>
+</div>
+<div id="example-output-from-pre-commit" class="section level3">
+<h3 class="hasAnchor">
+<a href="#example-output-from-pre-commit" class="anchor"></a>Example output from pre-commit</h3>
+<div class="sourceCode" id="cb9"><pre class="sourceCode sh"><code class="sourceCode bash"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="ex">$</span> git add .</span>
+<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a><span class="ex">$</span> git commit <span class="at">-m</span> <span class="st">"Add pre-commit configuration"</span></span>
+<span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a><span class="ex">[INFO]</span> Installing environment for https://github.com/pre-commit/pre-commit-hooks.</span>
+<span id="cb9-4"><a href="#cb9-4" aria-hidden="true" tabindex="-1"></a><span class="ex">[INFO]</span> Once installed this environment will be reused.</span>
+<span id="cb9-5"><a href="#cb9-5" aria-hidden="true" tabindex="-1"></a><span class="ex">[INFO]</span> This may take a few minutes...</span>
+<span id="cb9-6"><a href="#cb9-6" aria-hidden="true" tabindex="-1"></a><span class="ex">style-files..............................................................Passed</span></span>
+<span id="cb9-7"><a href="#cb9-7" aria-hidden="true" tabindex="-1"></a><span class="ex">roxygenize...........................................</span><span class="er">(</span><span class="ex">no</span> files to check<span class="kw">)</span><span class="ex">Skipped</span></span>
+<span id="cb9-8"><a href="#cb9-8" aria-hidden="true" tabindex="-1"></a><span class="ex">use-tidy-description.....................................................Passed</span></span>
+<span id="cb9-9"><a href="#cb9-9" aria-hidden="true" tabindex="-1"></a><span class="ex">spell-check..............................................................Failed</span></span>
+<span id="cb9-10"><a href="#cb9-10" aria-hidden="true" tabindex="-1"></a><span class="ex">-</span> hook id: spell-check</span>
+<span id="cb9-11"><a href="#cb9-11" aria-hidden="true" tabindex="-1"></a><span class="ex">-</span> exit code: 1</span>
+<span id="cb9-12"><a href="#cb9-12" aria-hidden="true" tabindex="-1"></a><span class="ex">-</span> files were modified by this hook</span>
+<span id="cb9-13"><a href="#cb9-13" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-14"><a href="#cb9-14" aria-hidden="true" tabindex="-1"></a><span class="ex">The</span> following spelling errors were found:</span>
+<span id="cb9-15"><a href="#cb9-15" aria-hidden="true" tabindex="-1"></a>  <span class="ex">WORD</span>          FOUND IN</span>
+<span id="cb9-16"><a href="#cb9-16" aria-hidden="true" tabindex="-1"></a><span class="ex">commiting</span>     README.md:77</span>
+<span id="cb9-17"><a href="#cb9-17" aria-hidden="true" tabindex="-1"></a><span class="ex">indentify</span>     README.md:49</span>
+<span id="cb9-18"><a href="#cb9-18" aria-hidden="true" tabindex="-1"></a><span class="ex">informatoin</span>   README.md:77</span>
+<span id="cb9-19"><a href="#cb9-19" aria-hidden="true" tabindex="-1"></a><span class="ex">All</span> spelling errors found were copied to inst/WORDLIST assuming they were not spelling errors and will be ignored in the future. Please  review the above list and for each word that is an actual typo:</span>
+<span id="cb9-20"><a href="#cb9-20" aria-hidden="true" tabindex="-1"></a> <span class="ex">-</span> fix it in the source code.</span>
+<span id="cb9-21"><a href="#cb9-21" aria-hidden="true" tabindex="-1"></a> <span class="ex">-</span> remove it again manually from inst/WORDLIST to make sure it<span class="st">'s not</span></span>
+<span id="cb9-22"><a href="#cb9-22" aria-hidden="true" tabindex="-1"></a><span class="st">   ignored in the future.</span></span>
+<span id="cb9-23"><a href="#cb9-23" aria-hidden="true" tabindex="-1"></a><span class="st"> Then, try committing again.</span></span>
+<span id="cb9-24"><a href="#cb9-24" aria-hidden="true" tabindex="-1"></a><span class="st">Error: Spell check failed</span></span>
+<span id="cb9-25"><a href="#cb9-25" aria-hidden="true" tabindex="-1"></a><span class="st">Execution halted</span></span>
+<span id="cb9-26"><a href="#cb9-26" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-27"><a href="#cb9-27" aria-hidden="true" tabindex="-1"></a><span class="st">lintr....................................................................Passed</span></span>
+<span id="cb9-28"><a href="#cb9-28" aria-hidden="true" tabindex="-1"></a><span class="st">readme-rmd-rendered......................................................Passed</span></span>
+<span id="cb9-29"><a href="#cb9-29" aria-hidden="true" tabindex="-1"></a><span class="st">parsable-R...............................................................Passed</span></span>
+<span id="cb9-30"><a href="#cb9-30" aria-hidden="true" tabindex="-1"></a><span class="st">no-browser-statement.....................................................Passed</span></span>
+<span id="cb9-31"><a href="#cb9-31" aria-hidden="true" tabindex="-1"></a><span class="st">deps-in-desc.............................................................Passed</span></span>
+<span id="cb9-32"><a href="#cb9-32" aria-hidden="true" tabindex="-1"></a><span class="st">prettier.................................................................Failed</span></span>
+<span id="cb9-33"><a href="#cb9-33" aria-hidden="true" tabindex="-1"></a><span class="st">- hook id: prettier</span></span>
+<span id="cb9-34"><a href="#cb9-34" aria-hidden="true" tabindex="-1"></a><span class="st">- files were modified by this hook</span></span>
+<span id="cb9-35"><a href="#cb9-35" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-36"><a href="#cb9-36" aria-hidden="true" tabindex="-1"></a><span class="st">.pre-commit-config.yaml</span></span>
+<span id="cb9-37"><a href="#cb9-37" aria-hidden="true" tabindex="-1"></a><span class="st">README.md</span></span>
+<span id="cb9-38"><a href="#cb9-38" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-39"><a href="#cb9-39" aria-hidden="true" tabindex="-1"></a><span class="st">Check for added large files..............................................Passed</span></span>
+<span id="cb9-40"><a href="#cb9-40" aria-hidden="true" tabindex="-1"></a><span class="st">Fix End of Files.........................................................Passed</span></span>
+<span id="cb9-41"><a href="#cb9-41" aria-hidden="true" tabindex="-1"></a><span class="st">Trim Trailing Whitespace.................................................Failed</span></span>
+<span id="cb9-42"><a href="#cb9-42" aria-hidden="true" tabindex="-1"></a><span class="st">- hook id: trailing-whitespace</span></span>
+<span id="cb9-43"><a href="#cb9-43" aria-hidden="true" tabindex="-1"></a><span class="st">- exit code: 1</span></span>
+<span id="cb9-44"><a href="#cb9-44" aria-hidden="true" tabindex="-1"></a><span class="st">- files were modified by this hook</span></span>
+<span id="cb9-45"><a href="#cb9-45" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-46"><a href="#cb9-46" aria-hidden="true" tabindex="-1"></a><span class="st">Fixing .pre-commit-config.yaml</span></span>
+<span id="cb9-47"><a href="#cb9-47" aria-hidden="true" tabindex="-1"></a><span class="st">Fixing README.md</span></span>
+<span id="cb9-48"><a href="#cb9-48" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-49"><a href="#cb9-49" aria-hidden="true" tabindex="-1"></a><span class="st">Check Yaml...............................................................Passed</span></span>
+<span id="cb9-50"><a href="#cb9-50" aria-hidden="true" tabindex="-1"></a><span class="st">Don'</span>t commit to branch...................................................Passed</span>
+<span id="cb9-51"><a href="#cb9-51" aria-hidden="true" tabindex="-1"></a><span class="ex">Mixed</span> line ending........................................................Passed</span>
+<span id="cb9-52"><a href="#cb9-52" aria-hidden="true" tabindex="-1"></a><span class="ex">Don</span><span class="st">'t commit common R artifacts......................(no files to check)Skipped</span></span></code></pre></div>
+</div>
 </div>
 </div>
   </div>
