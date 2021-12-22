@@ -25,6 +25,8 @@
 </script>
 </head>
 <body data-spy="scroll" data-target="#toc">
+    
+
     <div class="container template-home">
       <header><div class="navbar navbar-default navbar-fixed-top" role="navigation">
   <div class="container">
@@ -37,18 +39,12 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="index.html">r.pkg.template</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">0.0.0.9025</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.0.0.9026</span>
       </span>
     </div>
 
     <div id="navbar" class="navbar-collapse collapse">
       <ul class="nav navbar-nav">
-<li>
-  <a href="index.html">
-    <span class="fas fa-home fa-lg"></span>
-     
-  </a>
-</li>
 <li>
   <a href="reference/index.html">Reference</a>
 </li>
@@ -67,19 +63,10 @@
 <li>
   <a href="news/index.html">Changelog</a>
 </li>
-<!-- start_releases -->
-<li class="dropdown">
-	<a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false">
-Other releases
-<span class="caret"></span></a><ul class="dropdown-menu" role="menu">
-   <li><a href="index.html">latest</a></li>
-   <li><a href="/index.html"></a></li>
-</ul></li>
-<!-- end_releases -->
       </ul>
 <ul class="nav navbar-nav navbar-right">
 <li>
-  <a href="https://github.com/insightsengineering/r.pkg.template">
+  <a href="https://github.com/insightsengineering/r.pkg.template" class="external-link">
     <span class="fa fa-github"></span>
      
   </a>
@@ -96,13 +83,13 @@ Other releases
 
       </header><div class="row">
   <div class="contents col-md-9">
-<div id="rpkgtemplate" class="section level1">
-<div class="page-header"><h1 class="hasAnchor">
-<a href="#rpkgtemplate" class="anchor"></a>r.pkg.template</h1></div>
+<div class="section level1">
+<div class="page-header"><h1 id="rpkgtemplate">r.pkg.template<a class="anchor" aria-label="anchor" href="#rpkgtemplate"></a>
+</h1></div>
 <p>An R package template with built-in Github Actions-based CI/CD workflows.</p>
-<div id="usage" class="section level2">
-<h2 class="hasAnchor">
-<a href="#usage" class="anchor"></a>Usage</h2>
+<div class="section level2">
+<h2 id="usage">Usage<a class="anchor" aria-label="anchor" href="#usage"></a>
+</h2>
 <ul>
 <li>Assuming your package will be called <code>awesomeR</code>, and the Github owner (i.e. username or organization) is <code>awesome-owner</code>, set them as shell variables. This will be used for steps to follow:</li>
 </ul>
@@ -132,38 +119,38 @@ Other releases
 <li><p>Enjoy!</p></li>
 </ul>
 </div>
-<div id="pre-commit" class="section level2">
-<h2 class="hasAnchor">
-<a href="#pre-commit" class="anchor"></a>Pre-commit</h2>
-<p>This repository contains an example <a href="https://pre-commit.com">pre-commit</a> configuration.</p>
-<p><a href="https://pre-commit.com">pre-commit</a> is a tool that uses <a href="https://git-scm.com/book/en/v2/Customizing-Git-Git-Hooks">Git hooks</a> to identify and resolve simple issues prior to submission for code review. <a href="https://git-scm.com/book/en/v2/Customizing-Git-Git-Hooks">Git hooks</a> run on every commit to automatically point out and solve issues such as missing semicolons, trailing whitespaces, code formatting and spell checks.</p>
-<div id="setting-up-pre-commit-for-r-project" class="section level3">
-<h3 class="hasAnchor">
-<a href="#setting-up-pre-commit-for-r-project" class="anchor"></a>Setting up pre-commit for R project</h3>
-<ol>
-<li>Install the <code>pre-commit</code> framework. Use the official <a href="https://pre-commit.com/#installation">installation guide</a>.</li>
+<div class="section level2">
+<h2 id="pre-commit">Pre-commit<a class="anchor" aria-label="anchor" href="#pre-commit"></a>
+</h2>
+<p>This repository contains an example <a href="https://pre-commit.com" class="external-link">pre-commit</a> configuration.</p>
+<p><a href="https://pre-commit.com" class="external-link">pre-commit</a> is a tool that uses <a href="https://git-scm.com/book/en/v2/Customizing-Git-Git-Hooks" class="external-link">Git hooks</a> to identify and resolve simple issues prior to submission for code review. <a href="https://git-scm.com/book/en/v2/Customizing-Git-Git-Hooks" class="external-link">Git hooks</a> run on every commit to automatically point out and solve issues such as missing semicolons, trailing whitespaces, code formatting and spell checks.</p>
+<div class="section level3">
+<h3 id="setting-up-pre-commit-for-r-project">Setting up pre-commit for R project<a class="anchor" aria-label="anchor" href="#setting-up-pre-commit-for-r-project"></a>
+</h3>
+<ol style="list-style-type: decimal">
+<li>Install the <code>pre-commit</code> framework. Use the official <a href="https://pre-commit.com/#installation" class="external-link">installation guide</a>.</li>
 <li>Install R package <code>precommit</code>
 </li>
 </ol>
 <div class="sourceCode" id="cb6"><pre class="sourceCode sh"><code class="sourceCode bash"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="ex">R</span> <span class="at">-e</span> <span class="st">'install.packages("precommit")'</span></span></code></pre></div>
-<ol>
+<ol start="3" style="list-style-type: decimal">
 <li>Run the <code>use_precommit()</code> function to generate an example pre-commit configuration called <code>.pre-commit-config.yaml</code>:</li>
 </ol>
 <div class="sourceCode" id="cb7"><pre class="sourceCode sh"><code class="sourceCode bash"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="bu">[</span> <span class="ot">!</span> <span class="ot">-f</span> <span class="st">".pre-commit-config.yaml"</span> <span class="bu">]</span> <span class="kw">&amp;&amp;</span> <span class="ex">R</span> <span class="at">-e</span> <span class="st">'precommit::use_precommit()'</span></span></code></pre></div>
-<ol>
+<ol start="4" style="list-style-type: decimal">
 <li>Install the git hooks script:</li>
 </ol>
 <div class="sourceCode" id="cb8"><pre class="sourceCode sh"><code class="sourceCode bash"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="ex">pre-commit</span> install</span></code></pre></div>
-<ol>
-<li>From this moment all scripts from <code>.pre-commit-config.yaml</code> will run before every <code>git commit</code> command. If you want to run them manually without committing you can use command <code>pre-commit run --all-files</code>. For more information refer official <a href="https://pre-commit.com">pre-commit</a> documentation.</li>
+<ol start="5" style="list-style-type: decimal">
+<li>From this moment all scripts from <code>.pre-commit-config.yaml</code> will run before every <code>git commit</code> command. If you want to run them manually without committing you can use command <code>pre-commit run --all-files</code>. For more information refer official <a href="https://pre-commit.com" class="external-link">pre-commit</a> documentation.</li>
 </ol>
 <blockquote>
 <p>NOTE: Frequently run <code>pre-commit autoupdate</code> to update all repositories in <code>.pre-commit-config.yaml</code>.</p>
 </blockquote>
 </div>
-<div id="example-output-from-pre-commit" class="section level3">
-<h3 class="hasAnchor">
-<a href="#example-output-from-pre-commit" class="anchor"></a>Example output from pre-commit</h3>
+<div class="section level3">
+<h3 id="example-output-from-pre-commit">Example output from pre-commit<a class="anchor" aria-label="anchor" href="#example-output-from-pre-commit"></a>
+</h3>
 <div class="sourceCode" id="cb9"><pre class="sourceCode sh"><code class="sourceCode bash"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="ex">$</span> git add .</span>
 <span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a><span class="ex">$</span> git commit <span class="at">-m</span> <span class="st">"Add pre-commit configuration"</span></span>
 <span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a><span class="ex">[INFO]</span> Installing environment for https://github.com/pre-commit/pre-commit-hooks.</span>
@@ -223,44 +210,56 @@ Other releases
 
   <div class="col-md-3 hidden-xs hidden-sm" id="pkgdown-sidebar">
     <div class="links">
-<h2>Links</h2>
+<h2 data-toc-skip>Links</h2>
 <ul class="list-unstyled">
-<li>Browse source code at <br><a href="https://github.com/insightsengineering/r.pkg.template/">https://​github.com/​insightsengineering/​r.pkg.template/​</a>
-</li>
-<li>Report a bug at <br><a href="https://github.com/insightsengineering/r.pkg.template/issues">https://​github.com/​insightsengineering/​r.pkg.template/​issues</a>
-</li>
+<li><a href="https://github.com/insightsengineering/r.pkg.template/" class="external-link">Browse source code</a></li>
+<li><a href="https://github.com/insightsengineering/r.pkg.template/issues" class="external-link">Report a bug</a></li>
 </ul>
 </div>
+
 <div class="license">
-<h2>License</h2>
+<h2 data-toc-skip>License</h2>
 <ul class="list-unstyled">
 <li>Apache License 2.0 | file <a href="LICENSE-text.html">LICENSE</a>
 </li>
 </ul>
 </div>
+
 <div class="community">
-<h2>Community</h2>
+<h2 data-toc-skip>Community</h2>
 <ul class="list-unstyled">
 <li><a href="CONTRIBUTING.html">Contributing guide</a></li>
 </ul>
 </div>
+
+<div class="citation">
+<h2 data-toc-skip>Citation</h2>
+<ul class="list-unstyled">
+<li><a href="authors.html#citation">Citing r.pkg.template</a></li>
+</ul>
+</div>
+
 <div class="developers">
-<h2>Developers</h2>
+<h2 data-toc-skip>Developers</h2>
 <ul class="list-unstyled">
 <li>NEST <br><small class="roles"> Author, maintainer </small>  </li>
 </ul>
 </div>
+
+
 
   </div>
 </div>
 
 
       <footer><div class="copyright">
-  <p>Developed by NEST.</p>
+  <p></p>
+<p>Developed by NEST.</p>
 </div>
 
 <div class="pkgdown">
-  <p>Site built with <a href="https://pkgdown.r-lib.org/">pkgdown</a> 1.6.1.</p>
+  <p></p>
+<p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.0.1.</p>
 </div>
 
       </footer>
@@ -268,6 +267,8 @@ Other releases
 
   
 
+
+  
 
   </body>
 </html>
