@@ -62,8 +62,8 @@ jobs:
 
       - name: Build report 🏗
         uses: insightsengineering/thevalidatoR@v1.1.1
-        env:
-          INPUT_REPORT_PKG_DIR: ${{ github.event.repository.name }}
+        with:
+          report_pkg_dir: ${{ github.event.repository.name }}
 
       - name: Upload report for review ⬆
         if: github.ref != 'refs/heads/main'
