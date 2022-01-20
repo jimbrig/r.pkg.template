@@ -42,6 +42,10 @@ jobs:
       packages: write
       deployments: write
     steps:
+      - name: Get branch names 🌿
+        id: branch-name
+        uses: tj-actions/branch-names@v5
+        
       - name: Checkout repo 🛎
         uses: actions/checkout@v2
 
