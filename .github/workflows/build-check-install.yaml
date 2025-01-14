@@ -126,9 +126,52 @@ on:
         description: |
           Set this to a comma-separated named list of R packages repositories to use for installing dependencies.
           Example: "R-universe=https://insightsengineering.r-universe.dev/,CRAN=https://cloud.r-project.org/"
+          If the value is non-empty, it takes precedence over deps-installation-method.
         required: false
         type: string
         default: ""
+      deps-installation-method:
+        description: |
+          Which method for installing R package dependencies to use? Supported values are:
+          staged-dependencies
+          setup-r-dependencies
+        required: false
+        type: string
+        default: staged-dependencies
+      lookup-refs:
+        description: |
+          List of package references to be used by setup-r-dependencies action if deps-installation-method == 'setup-r-dependencies'.
+        required: false
+        type: string
+        default: ""
+      skip-desc-branch:
+        description: |
+          Passed to `insightsengineering/setup-r-dependencies`.
+          Used only if deps-installation-method == 'setup-r-dependencies'.
+        required: false
+        type: boolean
+        default: false
+      skip-desc-dev:
+        description: |
+          Passed to `insightsengineering/setup-r-dependencies`.
+          Used only if deps-installation-method == 'setup-r-dependencies'.
+        required: false
+        type: boolean
+        default: false
+      repository-list:
+        description: |
+          Passed to `insightsengineering/setup-r-dependencies`.
+          Used only if deps-installation-method == 'setup-r-dependencies'.
+        required: false
+        type: string
+        default: "PPM=PPM@latest"
+      cache-version:
+        description: |
+          Passed to `insightsengineering/setup-r-dependencies`.
+          Used only if deps-installation-method == 'setup-r-dependencies'.
+        required: false
+        type: string
+        default: "1"
       unit-test-report-brand:
         description: Image URL to use in unit test report for branding. If empty, the default xunit-viewer brand will be used.
         required: false
@@ -174,6 +217,35 @@ on:
         required: false
         type: string
         default: ""
+      enable-sd:
+        description: |
+          Whether the installation of package dependencies via staged.dependencies should be enabled.
+          Has no effect if deps-installation-method == 'setup-r-dependencies' or
+          install-deps-from-package-repositories is set to non-empty value.
+        required: false
+        type: boolean
+        default: true
+      update-r-packages:
+        description: |
+          Whether R packages installed in the container should be updated to their latest version from CRAN/BioC.
+        required: false
+        type: boolean
+        default: false
+      unit-test-report-directory:
+        description: |
+          Directory name on gh-pages branch where the unit test report will be uploaded.
+          If the unit test report directory is different than the default 'unit-test-report',
+          it has to be added to the additional-unit-test-report-directories pkgdown workflow input.
+          Additionally, if the non-default unit test report should be shown in the GitHub Pages
+          documentation drop-down, it has to be added to _pkgdown.yaml.
+        required: false
+        type: string
+        default: "unit-test-report"
+      disable-package-rebuild-and-upload:
+        description: This will disable the package rebuild and upload step for versioned tags.
+        required: false
+        type: boolean
+        default: false
 
 concurrency:
   group: r-cmd-${{ inputs.concurrency-group }}-${{ github.event.pull_request.number || github.ref }}
@@ -219,20 +291,16 @@ jobs:
         uses: tj-actions/branch-names@v7
 
       - name: Checkout repo (PR) 🛎
-        uses: actions/checkout@v4
+        uses: actions/checkout@v4.1.1
         if: github.event_name == 'pull_request'
         with:
           ref: ${{ steps.branch-name.outputs.head_ref_branch }}
           path: ${{ github.event.repository.name }}
           repository: ${{ github.event.pull_request.head.repo.full_name }}
-          # When fetch-depth is set to 1 (default), and if additional commits are added
-          # to the branch between this step and the 'Set TESTING_DEPTH' step, git might fail
-          # referencing ${{ github.event.after }} commit
-          # because it's not the latest commit fetched by this step.
           fetch-depth: 0
 
       - name: Checkout repo 🛎
-        uses: actions/checkout@v4
+        uses: actions/checkout@v4.1.1
         if: github.event_name != 'pull_request'
         with:
           ref: ${{ steps.branch-name.outputs.head_ref_branch }}
@@ -257,7 +325,7 @@ jobs:
           inputs.publish-unit-test-report-gh-pages == true
             && github.event_name != 'pull_request'
         id: checkout-gh-pages
-        uses: actions/checkout@v4
+        uses: actions/checkout@v4.1.1
         with:
           ref: gh-pages
           path: gh-pages
@@ -286,7 +354,7 @@ jobs:
             echo "ref-name=${{ steps.branch-name.outputs.current_branch }}" >> $GITHUB_OUTPUT
           fi
           # Check if pkgdown multiversion docs are used at all.
-          if [ $(grep -rl '<!-- start dropdown for versions -->' gh-pages | wc -l) -gt 0 ]; then
+          if [ $(grep -rl '<!-- Generated by pkgdown + https://github.com/insightsengineering/r-pkgdown-multiversion -->' gh-pages | wc -l) -gt 0 ]; then
             echo "multiversion-docs=true" >> $GITHUB_OUTPUT
           else
             echo "multiversion-docs=false" >> $GITHUB_OUTPUT
@@ -300,11 +368,15 @@ jobs:
           junit_xml_comparison_input="${{ inputs.junit-xml-comparison }}"
           junit_xml_positive_threshold="${{ inputs.junit-xml-positive-threshold }}"
           junit_xml_negative_threshold="${{ inputs.junit-xml-negative-threshold }}"
+          enable_sd="${{ inputs.enable-sd }}"
+          deps_installation_method="${{ inputs.deps-installation-method }}"
           echo "junit_xml_storage=${junit_xml_storage_input:-_junit_xml_reports}" >> $GITHUB_ENV
           echo "junit_xml_diff_branch=${junit_xml_diff_branch_input:-main}" >> $GITHUB_ENV
           echo "junit_xml_comparison=${junit_xml_comparison_input:-true}" >> $GITHUB_ENV
           echo "junit_xml_positive_threshold=${junit_xml_positive_threshold:-1.0}" >> $GITHUB_ENV
           echo "junit_xml_negative_threshold=${junit_xml_negative_threshold:-1.0}" >> $GITHUB_ENV
+          echo "enable_sd=${enable_sd:-true}" >> $GITHUB_ENV
+          echo "deps_installation_method=${deps_installation_method:-staged-dependencies}" >> $GITHUB_ENV
         shell: bash
 
       - name: Restore npm cache 💰
@@ -336,15 +408,27 @@ jobs:
         shell: bash
 
       - name: Restore SD cache 💰
-        if: inputs.install-deps-from-package-repositories == ''
+        if: >-
+          inputs.install-deps-from-package-repositories == ''
+            && env.deps_installation_method == 'staged-dependencies'
         uses: actions/cache@v4
         with:
           key: sd-${{ runner.os }}-${{ github.event.repository.name }}
           path: ~/.staged.dependencies
 
+      - name: Update R packages 🗓️
+        if: >-
+          inputs.update-r-packages == true
+        run: |
+          update.packages()
+        shell: Rscript {0}
+
       - name: Run Staged dependencies 🎦
-        if: inputs.install-deps-from-package-repositories == ''
-        uses: insightsengineering/staged-dependencies-action@v1
+        if: >-
+          env.enable_sd == 'true'
+            && inputs.install-deps-from-package-repositories == ''
+            && env.deps_installation_method == 'staged-dependencies'
+        uses: insightsengineering/staged-dependencies-action@v2
         env:
           GITHUB_PAT: ${{ steps.github-token.outputs.token }}
         with:
@@ -352,6 +436,21 @@ jobs:
           enable-check: ${{ inputs.enable-staged-dependencies-check }}
           run-system-dependencies: ${{ inputs.install-system-dependencies }}
           direction: ${{ inputs.sd-direction }}
+
+      - name: Setup R dependencies 🎦
+        if: >-
+          env.deps_installation_method == 'setup-r-dependencies'
+          && inputs.install-deps-from-package-repositories == ''
+        uses: insightsengineering/setup-r-dependencies@v1
+        env:
+          GITHUB_PAT: ${{ steps.github-token.outputs.token }}
+        with:
+          lookup-refs: ${{ inputs.lookup-refs }}
+          repository-path: ${{ github.event.repository.name }}/${{ inputs.package-subdirectory }}
+          skip-desc-branch: ${{ inputs.skip-desc-branch }}
+          skip-desc-dev: ${{ inputs.skip-desc-dev }}
+          repository-list: ${{ inputs.repository-list }}
+          cache-version: ${{ inputs.cache-version }}
 
       - name: Install dependencies from package repositories 🗄️
         if: inputs.install-deps-from-package-repositories != ''
@@ -427,27 +526,6 @@ jobs:
           R CMD build ${{ github.event.repository.name }}/${{ inputs.package-subdirectory }}
         shell: bash
 
-      - name: Set TESTING_DEPTH ⚙
-        env:
-          COMMIT_NEWEST_MESSAGE: ${{ github.event.head_commit.message }}
-          COMMIT_OLDEST_MESSAGE: ${{ github.event.commits[0].message }}
-        run: |
-          # set TESTING_DEPTH for PR
-          if [[ ! -z "${GITHUB_HEAD_REF}" ]]; then
-            TESTING_DEPTH=3
-            echo "TESTING_DEPTH=3" >> $GITHUB_ENV
-            COMMIT_NEWEST_MESSAGE=$(git log --format=%B -n 1 ${{ github.event.after }})
-          fi
-          if [[ $COMMIT_NEWEST_MESSAGE == *"[skip tests]"* ]]; then
-            echo "NO_TESTS=1" >> $GITHUB_ENV
-          fi
-          # default TESTING_DEPTH
-          if [[ -z "${TESTING_DEPTH}" ]]; then
-            echo "TESTING_DEPTH=1" >> $GITHUB_ENV
-          fi
-        shell: bash
-        working-directory: ${{ github.event.repository.name }}/${{ inputs.package-subdirectory }}
-
       - name: Run R CMD check 🏁
         run: |
           if [ "${{ inputs.skip-r-cmd-check }}" == "true" ]
@@ -490,7 +568,7 @@ jobs:
 
       - name: Fetch report from ${{ env.junit_xml_storage }} ⤵️
         if: env.junit_xml_comparison == 'true'
-        uses: actions/checkout@v4
+        uses: actions/checkout@v4.1.1
         with:
           path: ${{ env.junit_xml_storage }}
           fetch-depth: 0
@@ -565,7 +643,7 @@ jobs:
             && github.event_name != 'pull_request'
         uses: actions/upload-artifact@v4
         with:
-          name: unit-test-report
+          name: unit-test-report-${{ inputs.concurrency-group }}
           path: "index.html"
 
       - name: Set output ⚙️
@@ -589,7 +667,7 @@ jobs:
 
       - name: Fetch JUnit XML reports from ${{ env.junit_xml_storage }} ⤵️
         if: steps.check-junit-xml.outputs.files_exists == 'true' && env.junit_xml_comparison == 'true'
-        uses: actions/checkout@v4
+        uses: actions/checkout@v4.1.1
         with:
           path: ${{ env.junit_xml_storage }}
           fetch-depth: 0
@@ -696,9 +774,12 @@ jobs:
         if: inputs.skip-r-cmd-check != true
         run: |
           find ${{ env.PKGNAME }}.Rcheck -type f -regextype posix-egrep \
-            -regex '.*00install.out|.*00check.log|.*00build.out' -print0 | while IFS= read -r -d $'\0' file; do
-            printf "==================================\n$file\n==================================\n"
-            cat $file
+            -regex '.*00install.out|.*00check.log|.*00build.out|.*-Ex.Rout|.*tests/testthat\.Rout.*' \
+            -print0 | while IFS= read -r -d $'\0' file; do
+              # Grouping allows to collapse/expand logs when needed.
+              echo "::group::$file"
+              cat $file
+              echo "::endgroup::"
           done
         shell: bash
 
@@ -773,16 +854,37 @@ jobs:
             export $(tr '\n' ' ' < /tmp/dotenv.env)
           }
           fi
-          R CMD build .
+          if [ "${{ inputs.disable-package-rebuild-and-upload }}" != "true" ]
+          then {
+            R CMD build .
+          } else {
+            echo "🙅🏼‍♀️ Not rebuilding package for uploads"
+          }
+          fi
         shell: bash
         working-directory: ${{ github.event.repository.name }}/${{ inputs.package-subdirectory }}
 
       - name: Upload package build ⤴
-        if: startsWith(github.ref, 'refs/tags/v')
+        if: >
+          startsWith(github.ref, 'refs/tags/v') &&
+            inputs.disable-package-rebuild-and-upload != 'true'
         uses: actions/upload-artifact@v4
         with:
           path: ${{ github.event.repository.name }}/${{ inputs.package-subdirectory }}/${{ env.PKGBUILD }}
           name: ${{ env.PKGBUILD }}
+          overwrite: true
+
+      - name: Upload logs artifact 🗞️
+        uses: actions/upload-artifact@v4
+        with:
+          path: |
+            ${{ env.PKGNAME }}.Rcheck/*00install.out
+            ${{ env.PKGNAME }}.Rcheck/*00check.log
+            ${{ env.PKGNAME }}.Rcheck/*00build.out
+            ${{ env.PKGNAME }}.Rcheck/*-Ex.Rout
+            ${{ env.PKGNAME }}.Rcheck/tests/testthat.Rout
+            ${{ env.PKGNAME }}.Rcheck/tests/testthat.Rout.fail
+          name: check-logs-${{ env.PKGNAME }}-${{ inputs.concurrency-group }}
 
   publish-junit-html-report:
     name: Publish JUnit HTML report 📰
@@ -810,44 +912,44 @@ jobs:
       - name: Download JUnit HTML report as artifact ⤵️
         uses: actions/download-artifact@v4
         with:
-          name: unit-test-report
+          name: unit-test-report-${{ inputs.concurrency-group }}
           path: unit-test-report
 
       - name: Upload JUnit HTML report to GitHub pages 🗞️
         if: needs.build-install-check.outputs.multiversion-docs == 'true'
-        uses: peaceiris/actions-gh-pages@v3
+        uses: peaceiris/actions-gh-pages@v4
         with:
           github_token: ${{ steps.github-token.outputs.token }}
           publish_dir: ./unit-test-report
-          destination_dir: ${{ needs.build-install-check.outputs.current-branch-or-tag }}/unit-test-report
+          destination_dir: ${{ needs.build-install-check.outputs.current-branch-or-tag }}/${{ inputs.unit-test-report-directory }}
 
       - name: Upload JUnit HTML report to GitHub pages (latest-tag) 🏷️
         if: >
           needs.build-install-check.outputs.is-latest-tag == 'true'
             && needs.build-install-check.outputs.multiversion-docs == 'true'
-        uses: peaceiris/actions-gh-pages@v3
+        uses: peaceiris/actions-gh-pages@v4
         with:
           github_token: ${{ steps.github-token.outputs.token }}
           publish_dir: ./unit-test-report
-          destination_dir: ${{ inputs.latest-tag-alt-name }}/unit-test-report
+          destination_dir: ${{ inputs.latest-tag-alt-name }}/${{ inputs.unit-test-report-directory }}
 
       - name: Upload JUnit HTML report to GitHub pages (release-candidate) 🏷️
         if: >
           needs.build-install-check.outputs.is-rc-tag == 'true'
             && needs.build-install-check.outputs.multiversion-docs == 'true'
-        uses: peaceiris/actions-gh-pages@v3
+        uses: peaceiris/actions-gh-pages@v4
         with:
           github_token: ${{ steps.github-token.outputs.token }}
           publish_dir: ./unit-test-report
-          destination_dir: ${{ inputs.release-candidate-alt-name }}/unit-test-report
+          destination_dir: ${{ inputs.release-candidate-alt-name }}/${{ inputs.unit-test-report-directory }}
 
       - name: Upload JUnit HTML report to GitHub pages (non-multiversion) 🗞️
         if: needs.build-install-check.outputs.multiversion-docs == 'false'
-        uses: peaceiris/actions-gh-pages@v3
+        uses: peaceiris/actions-gh-pages@v4
         with:
           github_token: ${{ steps.github-token.outputs.token }}
           publish_dir: ./unit-test-report
-          destination_dir: unit-test-report
+          destination_dir: ${{ inputs.unit-test-report-directory }}
 
   upload-release-assets:
     name: Upload build tar.gz
@@ -860,7 +962,7 @@ jobs:
 
     steps:
       - name: Checkout repo 🛎
-        uses: actions/checkout@v4
+        uses: actions/checkout@v4.1.1
 
       - name: Get package build filename 📦
         run: |

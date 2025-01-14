@@ -64,7 +64,7 @@ jobs:
         uses: tj-actions/branch-names@v7
 
       - name: Checkout repo (PR) 🛎
-        uses: actions/checkout@v4
+        uses: actions/checkout@v4.1.1
         if: github.event_name == 'pull_request'
         with:
           ref: ${{ steps.branch-name.outputs.head_ref_branch }}
@@ -74,7 +74,7 @@ jobs:
           token: ${{ steps.github-token.outputs.token }}
 
       - name: Checkout repo 🛎
-        uses: actions/checkout@v4
+        uses: actions/checkout@v4.1.1
         if: github.event_name != 'pull_request'
         with:
           ref: ${{ steps.branch-name.outputs.head_ref_branch }}
@@ -138,6 +138,8 @@ jobs:
           }
         shell: Rscript {0}
         working-directory: ${{ github.event.repository.name }}/${{ inputs.package-subdirectory }}
+        env:
+          LANG: en_US.UTF-8
 
       - name: Check file existence 🤔
         id: check_files
@@ -184,12 +186,14 @@ jobs:
             "or simply run the following commands",
             "for an immediate fix:\n"
           ))
-          cat("────────────────────────────────────────\n")
-          cat(paste0(
-            "styler::style_file(",
-              readLines("/tmp/style-problems.R", warn=FALSE),
-            ")\n"
-          ))
-          cat("────────────────────────────────────────\n")
+          if (file.exists("/tmp/style-problems.R")) {
+            cat("────────────────────────────────────────\n")
+            cat(paste0(
+              "styler::style_file(",
+                readLines("/tmp/style-problems.R", warn=FALSE),
+              ")\n"
+            ))
+            cat("────────────────────────────────────────\n")
+          }
           quit(status = 1)
         shell: Rscript {0}
