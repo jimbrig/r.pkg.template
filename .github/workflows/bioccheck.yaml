@@ -53,6 +53,20 @@ on:
         required: false
         type: string
         default: "."
+      deps-installation-method:
+        description: |
+          Which method for installing R package dependencies to use? Supported values are:
+          staged-dependencies
+          setup-r-dependencies
+        required: false
+        type: string
+        default: staged-dependencies
+      lookup-refs:
+        description: |
+          List of package references to be used by setup-r-dependencies action if deps-installation-method == 'setup-r-dependencies'.
+        required: false
+        type: string
+        default: ""
 
 concurrency:
   group: bioccheck-${{ github.event.pull_request.number || github.ref }}
@@ -93,7 +107,7 @@ jobs:
         uses: tj-actions/branch-names@v7
 
       - name: Checkout repo (PR) 🛎
-        uses: actions/checkout@v4
+        uses: actions/checkout@v4.1.1
         if: github.event_name == 'pull_request'
         with:
           ref: ${{ steps.branch-name.outputs.head_ref_branch }}
@@ -101,7 +115,7 @@ jobs:
           repository: ${{ github.event.pull_request.head.repo.full_name }}
 
       - name: Checkout repo 🛎
-        uses: actions/checkout@v4
+        uses: actions/checkout@v4.1.1
         if: github.event_name != 'pull_request'
         with:
           ref: ${{ steps.branch-name.outputs.head_ref_branch }}
@@ -122,13 +136,17 @@ jobs:
           SKIP_INSTRUCTION: "[skip bioccheck]"
 
       - name: Restore SD cache 💰
+        if: >-
+          inputs.deps-installation-method == 'staged-dependencies'
         uses: actions/cache@v4
         with:
           key: sd-${{ runner.os }}-${{ github.event.repository.name }}
           path: ~/.staged.dependencies
 
       - name: Run Staged dependencies 🎦
-        uses: insightsengineering/staged-dependencies-action@v1
+        if: >-
+          inputs.deps-installation-method == 'staged-dependencies'
+        uses: insightsengineering/staged-dependencies-action@v2
         env:
           GITHUB_PAT: ${{ steps.github-token.outputs.token }}
         with:
@@ -136,6 +154,16 @@ jobs:
           enable-check: ${{ inputs.enable-staged-dependencies-check }}
           run-system-dependencies: ${{ inputs.install-system-dependencies }}
           direction: ${{ inputs.sd-direction }}
+
+      - name: Setup R dependencies 🎦
+        if: >-
+          inputs.deps-installation-method == 'setup-r-dependencies'
+        uses: insightsengineering/setup-r-dependencies@v1
+        env:
+          GITHUB_PAT: ${{ steps.github-token.outputs.token }}
+        with:
+          lookup-refs: ${{ inputs.lookup-refs }}
+          repository-path: ${{ github.event.repository.name }}/${{ inputs.package-subdirectory }}
 
       - name: Run BiocCheck ☣️
         uses: insightsengineering/bioc-check-action@v1

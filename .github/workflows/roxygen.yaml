@@ -41,6 +41,21 @@ on:
         required: false
         type: string
         default: "."
+      deps-installation-method:
+        description: |
+          Which method for installing R package dependencies to use? Supported values are:
+          staged-dependencies
+          setup-r-dependencies
+        required: false
+        type: string
+        default: staged-dependencies
+      lookup-refs:
+        description: |
+          Passed to insightsengineering/setup-r-dependencies. See its documentation.
+          Used only if deps-installation-method == 'setup-r-dependencies'.
+        required: false
+        type: string
+        default: ""
     secrets:
       REPO_GITHUB_TOKEN:
         description: |
@@ -79,7 +94,7 @@ jobs:
         uses: tj-actions/branch-names@v7
 
       - name: Checkout repo (PR) 🛎
-        uses: actions/checkout@v4
+        uses: actions/checkout@v4.1.1
         if: github.event_name == 'pull_request'
         with:
           ref: ${{ steps.branch-name.outputs.head_ref_branch }}
@@ -88,7 +103,7 @@ jobs:
           token: ${{ steps.github-token.outputs.token }}
 
       - name: Checkout repo 🛎
-        uses: actions/checkout@v4
+        uses: actions/checkout@v4.1.1
         if: github.event_name != 'pull_request'
         with:
           ref: ${{ steps.branch-name.outputs.head_ref_branch }}
@@ -108,14 +123,24 @@ jobs:
         env:
           SKIP_INSTRUCTION: "[skip roxygen]"
 
+      - name: Normalize variables 📏
+        run: |
+          deps_installation_method="${{ inputs.deps-installation-method }}"
+          echo "deps_installation_method=${deps_installation_method:-staged-dependencies}" >> $GITHUB_ENV
+        shell: bash
+
       - name: Restore SD cache 💰
+        if: >-
+          env.deps_installation_method == 'staged-dependencies'
         uses: actions/cache@v4
         with:
           key: sd-${{ runner.os }}-${{ github.event.repository.name }}
           path: ~/.staged.dependencies
 
       - name: Run Staged dependencies 🎦
-        uses: insightsengineering/staged-dependencies-action@v1
+        if: >-
+          env.deps_installation_method == 'staged-dependencies'
+        uses: insightsengineering/staged-dependencies-action@v2
         env:
           GITHUB_PAT: ${{ steps.github-token.outputs.token }}
         with:
@@ -123,6 +148,16 @@ jobs:
           enable-check: ${{ inputs.enable-staged-dependencies-check }}
           run-system-dependencies: ${{ inputs.install-system-dependencies }}
           direction: ${{ inputs.sd-direction }}
+
+      - name: Setup R dependencies 🎦
+        if: >-
+          env.deps_installation_method == 'setup-r-dependencies'
+        uses: insightsengineering/setup-r-dependencies@v1
+        env:
+          GITHUB_PAT: ${{ steps.github-token.outputs.token }}
+        with:
+          lookup-refs: ${{ inputs.lookup-refs }}
+          repository-path: ${{ github.event.repository.name }}/${{ inputs.package-subdirectory }}
 
       - name: Generate man pages 📄
         run: |
@@ -150,6 +185,8 @@ jobs:
           }
         shell: Rscript {0}
         working-directory: ${{ github.event.repository.name }}/${{ inputs.package-subdirectory }}
+        env:
+          LANG: en_US.UTF-8
 
       - name: Roxygen check 🅾
         run: |
